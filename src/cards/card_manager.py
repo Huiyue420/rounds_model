@@ -1,6 +1,6 @@
 """
-卡牌管理器
-管理卡牌的創建、選擇和應用
+Card Manager
+Manages card creation, selection and application
 """
 
 import random
@@ -18,13 +18,13 @@ from ..core.event_manager import EventManager, EventType
 
 
 class CardManager:
-    """卡牌管理器"""
+    """Card manager"""
     
     def __init__(self, event_manager: EventManager):
         self.event_manager = event_manager
         self.logger = logging.getLogger(__name__)
         
-        # 所有可用的卡牌類型
+        # All available card types
         self.card_types: Dict[str, Type[CardBase]] = {
             'damage_boost': DamageBoostCard,
             'fire_rate_boost': FireRateBoostCard,
@@ -39,7 +39,7 @@ class CardManager:
             'big_bullets': BigBulletsCard
         }
         
-        # 根據稀有度的權重
+        # Weights based on rarity
         self.rarity_weights = {
             CardRarity.COMMON: 50,
             CardRarity.RARE: 30,
@@ -47,23 +47,23 @@ class CardManager:
             CardRarity.LEGENDARY: 5
         }
         
-        # 玩家擁有的卡牌
+        # Cards owned by players
         self.player_cards: Dict[int, List[CardBase]] = {}
         
-        self.logger.info("卡牌管理器初始化完成")
+        self.logger.info("Card manager initialization completed")
     
     def create_card(self, card_id: str) -> Optional[CardBase]:
-        """創建指定的卡牌"""
+        """Create specified card"""
         if card_id in self.card_types:
             try:
                 return self.card_types[card_id]()
             except Exception as e:
-                self.logger.error(f"創建卡牌失敗 {card_id}: {e}")
+                self.logger.error(f"Failed to create card {card_id}: {e}")
                 return None
         return None
     
     def get_random_cards(self, count: int = 3, exclude_cards: Optional[List[str]] = None) -> List[CardBase]:
-        """獲取隨機卡牌選項"""
+        """Get random card options"""
         if exclude_cards is None:
             exclude_cards = []
         
@@ -81,37 +81,37 @@ class CardManager:
             if card:
                 cards.append(card)
         
-        # 根據稀有度排序（稀有的在前面）
+        # Sort by rarity (rare ones first)
         cards.sort(key=lambda c: list(self.rarity_weights.keys()).index(c.rarity))
         
         return cards
     
     def add_card_to_player(self, player_id: int, card: CardBase) -> bool:
-        """將卡牌添加到玩家"""
+        """Add card to player"""
         if player_id not in self.player_cards:
             self.player_cards[player_id] = []
         
-        # 檢查是否已經有同樣的卡牌
+        # Check if the same card already exists
         existing_card = self.find_player_card(player_id, card.card_id)
         
         if existing_card and existing_card.can_stack():
-            # 疊加現有卡牌
+            # Stack existing card
             existing_card.add_stack()
-            self.logger.info(f"玩家 {player_id} 疊加卡牌: {card.name} (層數: {existing_card.current_stacks})")
+            self.logger.info(f"Player {player_id} stacked card: {card.name} (stacks: {existing_card.current_stacks})")
             return True
         elif not existing_card:
-            # 添加新卡牌
+            # Add new card
             self.player_cards[player_id].append(card)
             card.current_stacks = 1
-            self.logger.info(f"玩家 {player_id} 獲得新卡牌: {card.name}")
+            self.logger.info(f"Player {player_id} received new card: {card.name}")
             return True
         else:
-            # 不能疊加且已存在
-            self.logger.warning(f"玩家 {player_id} 已擁有卡牌 {card.name} 且不能疊加")
+            # Cannot stack and already exists
+            self.logger.warning(f"Player {player_id} already owns card {card.name} and cannot stack")
             return False
     
     def find_player_card(self, player_id: int, card_id: str) -> Optional[CardBase]:
-        """查找玩家的指定卡牌"""
+        """Find player's specified card"""
         if player_id in self.player_cards:
             for card in self.player_cards[player_id]:
                 if card.card_id == card_id:
@@ -119,45 +119,45 @@ class CardManager:
         return None
     
     def get_player_cards(self, player_id: int) -> List[CardBase]:
-        """獲取玩家的所有卡牌"""
+        """Get all cards of player"""
         return self.player_cards.get(player_id, [])
     
     def apply_card_to_player(self, player_id: int, card: CardBase, player_obj) -> bool:
-        """應用卡牌效果到玩家對象"""
+        """Apply card effect to player object"""
         try:
             card.apply_effect(player_obj)
             
-            # 發送卡牌應用事件
+            # Send card apply event
             self.event_manager.emit(EventType.CARD_APPLY, {
                 'player_id': player_id,
                 'card': card.to_dict(),
                 'player_cards_count': len(self.get_player_cards(player_id))
             })
             
-            self.logger.info(f"卡牌效果已應用: {card.name} -> 玩家 {player_id}")
+            self.logger.info(f"Card effect applied: {card.name} -> Player {player_id}")
             return True
             
         except Exception as e:
-            self.logger.error(f"應用卡牌效果失敗: {card.name} -> 玩家 {player_id}, 錯誤: {e}")
+            self.logger.error(f"Failed to apply card effect: {card.name} -> Player {player_id}, Error: {e}")
             return False
     
     def remove_all_cards_from_player(self, player_id: int, player_obj) -> None:
-        """移除玩家的所有卡牌效果"""
+        """Remove all card effects from player"""
         cards = self.get_player_cards(player_id)
         for card in cards:
             try:
                 card.remove_effect(player_obj)
             except Exception as e:
-                self.logger.error(f"移除卡牌效果失敗: {card.name} -> 玩家 {player_id}, 錯誤: {e}")
+                self.logger.error(f"Failed to remove card effect: {card.name} -> Player {player_id}, Error: {e}")
         
-        # 清空玩家卡牌列表
+        # Clear player card list
         if player_id in self.player_cards:
             del self.player_cards[player_id]
         
-        self.logger.info(f"玩家 {player_id} 的所有卡牌效果已移除")
+        self.logger.info(f"All card effects removed from player {player_id}")
     
     def show_card_selection(self, player_id: int, cards: List[CardBase]) -> None:
-        """顯示卡牌選擇界面"""
+        """Show card selection interface"""
         card_data = [card.to_dict() for card in cards]
         
         self.event_manager.emit(EventType.CARD_SHOW_SELECTION, {
@@ -165,25 +165,25 @@ class CardManager:
             'cards': card_data
         })
         
-        self.logger.info(f"顯示卡牌選擇界面 - 玩家 {player_id}, {len(cards)} 張卡牌")
+        self.logger.info(f"Show card selection interface - Player {player_id}, {len(cards)} cards")
     
     def hide_card_selection(self) -> None:
-        """隱藏卡牌選擇界面"""
+        """Hide card selection interface"""
         self.event_manager.emit(EventType.CARD_HIDE_SELECTION, {})
     
     def get_weighted_random_cards(self, count: int = 3) -> List[CardBase]:
-        """根據稀有度權重獲取隨機卡牌"""
+        """Get random cards based on rarity weights"""
         cards = []
         
-        # 預先建立卡牌ID到稀有度的映射，避免重複創建臨時卡牌
+        # Pre-build card ID to rarity mapping to avoid repeatedly creating temporary cards
         if not hasattr(self, '_card_rarity_map'):
             self._build_card_rarity_map()
         
         for _ in range(count):
-            # 先隨機選擇稀有度
+            # First randomly select rarity
             rarity = self._get_random_rarity()
             
-            # 獲取該稀有度的所有卡牌
+            # Get all cards of that rarity
             rarity_cards = [card_id for card_id, card_rarity in self._card_rarity_map.items() 
                            if card_rarity == rarity]
             
@@ -196,7 +196,7 @@ class CardManager:
         return cards
     
     def _build_card_rarity_map(self) -> None:
-        """建立卡牌ID到稀有度的映射"""
+        """Build mapping from card ID to rarity"""
         self._card_rarity_map = {}
         
         for card_id, card_type in self.card_types.items():
@@ -204,23 +204,23 @@ class CardManager:
                 temp_card = card_type()
                 self._card_rarity_map[card_id] = temp_card.rarity
             except Exception as e:
-                self.logger.warning(f"無法創建卡牌 {card_id} 來獲取稀有度: {e}")
-                # 設定預設稀有度
+                self.logger.warning(f"Cannot create card {card_id} to get rarity: {e}")
+                # Set default rarity
                 from .card_base import CardRarity
                 self._card_rarity_map[card_id] = CardRarity.COMMON
     
     def _get_random_rarity(self) -> CardRarity:
-        """根據權重隨機選擇稀有度"""
+        """Randomly select rarity based on weights"""
         rarities = list(self.rarity_weights.keys())
         weights = list(self.rarity_weights.values())
         
         return random.choices(rarities, weights=weights)[0]
     
     def get_card_statistics(self) -> Dict:
-        """獲取卡牌統計信息"""
+        """Get card statistics"""
         total_cards = len(self.card_types)
         
-        # 使用預建的稀有度映射
+        # Use pre-built rarity mapping
         if not hasattr(self, '_card_rarity_map'):
             self._build_card_rarity_map()
         

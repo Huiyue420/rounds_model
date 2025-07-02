@@ -1,6 +1,6 @@
 """
-卡牌基礎類
-定義卡牌的基礎結構和接口
+Card Base Class
+Defines the basic structure and interface for cards
 """
 
 from typing import Dict, Any, Optional
@@ -9,23 +9,23 @@ from enum import Enum
 
 
 class CardType(Enum):
-    """卡牌類型"""
-    OFFENSIVE = "offensive"   # 攻擊型
-    DEFENSIVE = "defensive"   # 防禦型
-    UTILITY = "utility"       # 功能型
-    MOVEMENT = "movement"     # 移動型
+    """Card type"""
+    OFFENSIVE = "offensive"   # Attack type
+    DEFENSIVE = "defensive"   # Defense type
+    UTILITY = "utility"       # Utility type
+    MOVEMENT = "movement"     # Movement type
 
 
 class CardRarity(Enum):
-    """卡牌稀有度"""
-    COMMON = "common"         # 普通（白色）
-    RARE = "rare"            # 稀有（藍色）
-    EPIC = "epic"            # 史詩（紫色）
-    LEGENDARY = "legendary"   # 傳說（橙色）
+    """Card rarity"""
+    COMMON = "common"         # Common (white)
+    RARE = "rare"            # Rare (blue)
+    EPIC = "epic"            # Epic (purple)
+    LEGENDARY = "legendary"   # Legendary (orange)
 
 
 class CardBase(ABC):
-    """卡牌基礎抽象類"""
+    """Card base abstract class"""
     
     def __init__(self, card_id: str, name: str, description: str, 
                  card_type: CardType, rarity: CardRarity):
@@ -34,43 +34,43 @@ class CardBase(ABC):
         self.description = description
         self.card_type = card_type
         self.rarity = rarity
-        self.is_stackable = False  # 是否可疊加
-        self.max_stacks = 1        # 最大疊加層數
-        self.current_stacks = 0    # 當前疊加層數
+        self.is_stackable = False  # Whether it can be stacked
+        self.max_stacks = 1        # Maximum stack count
+        self.current_stacks = 0    # Current stack count
     
     @abstractmethod
     def apply_effect(self, player) -> None:
-        """應用卡牌效果到玩家"""
+        """Apply card effect to player"""
         pass
     
     @abstractmethod
     def remove_effect(self, player) -> None:
-        """從玩家身上移除卡牌效果"""
+        """Remove card effect from player"""
         pass
     
     def can_stack(self) -> bool:
-        """檢查是否可以疊加"""
+        """Check if card can be stacked"""
         return self.is_stackable and self.current_stacks < self.max_stacks
     
     def add_stack(self) -> bool:
-        """增加疊加層數"""
+        """Add stack count"""
         if self.can_stack():
             self.current_stacks += 1
             return True
         return False
     
     def get_color(self) -> tuple:
-        """根據稀有度獲取顏色"""
+        """Get color based on rarity"""
         colors = {
-            CardRarity.COMMON: (200, 200, 200),      # 灰色
-            CardRarity.RARE: (100, 150, 255),        # 藍色
-            CardRarity.EPIC: (150, 100, 255),        # 紫色
-            CardRarity.LEGENDARY: (255, 200, 50)     # 橙色
+            CardRarity.COMMON: (200, 200, 200),      # Gray
+            CardRarity.RARE: (100, 150, 255),        # Blue
+            CardRarity.EPIC: (150, 100, 255),        # Purple
+            CardRarity.LEGENDARY: (255, 200, 50)     # Orange
         }
         return colors.get(self.rarity, (255, 255, 255))
     
     def get_icon(self) -> str:
-        """獲取卡牌圖標"""
+        """Get card icon"""
         icons = {
             CardType.OFFENSIVE: "⚔️",
             CardType.DEFENSIVE: "🛡️",
@@ -80,7 +80,7 @@ class CardBase(ABC):
         return icons.get(self.card_type, "❓")
     
     def to_dict(self) -> Dict[str, Any]:
-        """轉換為字典格式"""
+        """Convert to dictionary format"""
         return {
             'id': self.card_id,
             'name': self.name,

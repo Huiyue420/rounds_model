@@ -17,14 +17,6 @@ class GameConfig:
     window_title: str = "ROUNDS Python - Optimized Version"
     fullscreen: bool = False
     
-    def get_window_size(self) -> Tuple[int, int]:
-        """Get window size as tuple"""
-        return (self.window_width, self.window_height)
-    
-    def get_background_color(self) -> Tuple[int, int, int]:
-        """Get background color"""
-        return (50, 50, 80)  # Dark blue-gray
-    
     # Game settings
     target_fps: int = 60
     debug: bool = False
@@ -129,3 +121,25 @@ class GameConfig:
                     'bullets_per_shot': 1,
                 }
             }
+                    'bullet_speed': 700.0,
+                    'bullet_size': (6, 6),
+                    'spread': 5,
+                    'bullets_per_shot': 1,
+                },
+                'sniper': {
+                    'name': '狙擊槍',
+                    'damage': 75,
+                    'fire_rate': 0.5,
+                    'magazine_size': 3,
+                    'reload_time': 3.0,
+                    'bullet_speed': 1200.0,
+                    'bullet_size': (10, 10),
+                    'spread': 0,
+                    'bullets_per_shot': 1,
+                }
+            }
+    
+    @property
+    def window_size(self) -> Tuple[int, int]:
+        """獲取視窗大小"""
+        return (self.window_width, self.window_height)

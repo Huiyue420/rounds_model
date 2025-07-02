@@ -17,14 +17,6 @@ class GameConfig:
     window_title: str = "ROUNDS Python - Optimized Version"
     fullscreen: bool = False
     
-    def get_window_size(self) -> Tuple[int, int]:
-        """Get window size as tuple"""
-        return (self.window_width, self.window_height)
-    
-    def get_background_color(self) -> Tuple[int, int, int]:
-        """Get background color"""
-        return (50, 50, 80)  # Dark blue-gray
-    
     # Game settings
     target_fps: int = 60
     debug: bool = False

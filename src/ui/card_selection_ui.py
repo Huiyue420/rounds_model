@@ -1,6 +1,6 @@
 """
-卡牌選擇 UI
-顯示卡牌選擇界面，允許玩家從多張卡牌中選擇
+Card Selection UI
+Displays card selection interface, allows players to choose from multiple cards
 """
 
 try:
@@ -16,7 +16,7 @@ from ..core.event_manager import EventManager, EventType
 
 
 class CardUI:
-    """單張卡牌的 UI 表示"""
+    """UI representation of a single card"""
     
     def __init__(self, card_data: Dict, x: int, y: int, width: int, height: int):
         self.card_data = card_data
@@ -27,26 +27,26 @@ class CardUI:
         self.hovered = False
         self.selected = False
         
-        # 顏色
+        # Colors
         self.background_color = card_data.get('color', (100, 100, 100))
         self.border_color = (255, 255, 255)
         self.hover_color = (255, 255, 200)
         self.text_color = (255, 255, 255)
         
-        # 動畫
+        # Animation
         self.hover_animation = 0.0
         self.target_hover = 0.0
         self.animation_speed = 8.0
     
     def update(self, dt: float, mouse_pos: tuple) -> None:
-        """更新卡牌狀態"""
-        # 檢查滑鼠懸停
+        """Update card status"""
+        # Check mouse hover
         if pygame:
             mouse_x, mouse_y = mouse_pos
             self.hovered = (self.x <= mouse_x <= self.x + self.width and 
                            self.y <= mouse_y <= self.y + self.height)
         
-        # 更新懸停動畫
+        # Update hover animation
         self.target_hover = 1.0 if self.hovered else 0.0
         if self.hover_animation != self.target_hover:
             diff = self.target_hover - self.hover_animation
@@ -54,53 +54,53 @@ class CardUI:
             self.hover_animation = max(0.0, min(1.0, self.hover_animation))
     
     def render(self, screen, font, small_font) -> None:
-        """渲染卡牌"""
+        """Render card"""
         if not pygame:
             return
         
-        # 計算懸停效果
+        # Calculate hover effect
         hover_offset = int(self.hover_animation * 5)
         card_y = self.y - hover_offset
         
-        # 卡牌背景
+        # Card background
         card_rect = pygame.Rect(self.x, card_y, self.width, self.height)
         
-        # 混合顏色（懸停時變亮）
+        # Blend colors (brighten when hovered)
         bg_color = self._blend_colors(self.background_color, self.hover_color, self.hover_animation * 0.3)
         pygame.draw.rect(screen, bg_color, card_rect)
         
-        # 邊框
+        # Border
         border_width = 3 if self.hovered else 2
         pygame.draw.rect(screen, self.border_color, card_rect, border_width)
         
-        # 卡牌圖標
+        # Card icon
         icon = self.card_data.get('icon', '❓')
         icon_surface = font.render(icon, True, self.text_color)
         icon_x = self.x + (self.width - icon_surface.get_width()) // 2
         icon_y = card_y + 10
         screen.blit(icon_surface, (icon_x, icon_y))
         
-        # 卡牌名稱
-        name = self.card_data.get('name', '未知卡牌')
+        # Card name
+        name = self.card_data.get('name', 'Unknown Card')
         name_surface = small_font.render(name, True, self.text_color)
         name_x = self.x + (self.width - name_surface.get_width()) // 2
         name_y = icon_y + icon_surface.get_height() + 5
         screen.blit(name_surface, (name_x, name_y))
         
-        # 卡牌描述（換行顯示）
+        # Card description (multiline display)
         description = self.card_data.get('description', '')
         self._render_multiline_text(screen, small_font, description, 
                                   self.x + 5, name_y + 25, 
                                   self.width - 10, self.text_color)
         
-        # 稀有度指示器
+        # Rarity indicator
         rarity = self.card_data.get('rarity', 'common')
         rarity_color = self._get_rarity_color(rarity)
         rarity_rect = pygame.Rect(self.x, card_y, self.width, 5)
         pygame.draw.rect(screen, rarity_color, rarity_rect)
     
     def _blend_colors(self, color1: tuple, color2: tuple, factor: float) -> tuple:
-        """混合兩個顏色"""
+        """Blend two colors"""
         r1, g1, b1 = color1
         r2, g2, b2 = color2
         
@@ -112,7 +112,7 @@ class CardUI:
     
     def _render_multiline_text(self, screen, font, text: str, x: int, y: int, 
                               max_width: int, color: tuple) -> None:
-        """渲染多行文字"""
+        """Render multiline text"""
         words = text.split(' ')
         lines = []
         current_line = []
@@ -131,25 +131,25 @@ class CardUI:
         if current_line:
             lines.append(' '.join(current_line))
         
-        # 渲染每一行
+        # Render each line
         line_height = font.get_height()
         for i, line in enumerate(lines):
-            if y + i * line_height < self.y + self.height - 10:  # 確保不超出卡牌範圍
+            if y + i * line_height < self.y + self.height - 10:  # Ensure it doesn't exceed card boundaries
                 line_surface = font.render(line, True, color)
                 screen.blit(line_surface, (x, y + i * line_height))
     
     def _get_rarity_color(self, rarity: str) -> tuple:
-        """根據稀有度獲取顏色"""
+        """Get color based on rarity"""
         colors = {
-            'common': (200, 200, 200),      # 灰色
-            'rare': (100, 150, 255),        # 藍色
-            'epic': (150, 100, 255),        # 紫色
-            'legendary': (255, 200, 50)     # 橙色
+            'common': (200, 200, 200),      # Gray
+            'rare': (100, 150, 255),        # Blue
+            'epic': (150, 100, 255),        # Purple
+            'legendary': (255, 200, 50)     # Orange
         }
         return colors.get(rarity, (255, 255, 255))
     
     def is_clicked(self, mouse_pos: tuple) -> bool:
-        """檢查是否被點擊"""
+        """Check if clicked"""
         if not pygame:
             return False
         
@@ -159,7 +159,7 @@ class CardUI:
 
 
 class CardSelectionUI:
-    """卡牌選擇界面"""
+    """Card selection interface"""
     
     def __init__(self, config: GameConfig, event_manager: EventManager):
         self.config = config
@@ -192,28 +192,28 @@ class CardSelectionUI:
         self.event_manager.subscribe(EventType.CARD_SHOW_SELECTION, self._handle_show_selection)
         self.event_manager.subscribe(EventType.CARD_HIDE_SELECTION, self._handle_hide_selection)
         
-        self.logger.info("卡牌選擇 UI 初始化完成")
+        self.logger.info("Card selection UI initialization completed")
     
     def _init_fonts(self) -> None:
-        """初始化字體"""
+        """Initialize fonts"""
         if pygame:
             try:
                 self.font = pygame.font.Font(None, 36)
                 self.small_font = pygame.font.Font(None, 20)
             except Exception as e:
-                self.logger.warning(f"卡牌 UI 字體初始化失敗: {e}")
+                self.logger.warning(f"Card UI font initialization failed: {e}")
                 self.font = None
                 self.small_font = None
     
     def show_selection(self, player_id: int, cards_data: List[Dict], 
                       callback: Optional[Callable] = None) -> None:
-        """顯示卡牌選擇界面"""
+        """Show card selection interface"""
         self.visible = True
         self.player_id = player_id
         self.selection_callback = callback
         self.cards.clear()
         
-        # 計算卡牌位置
+        # Calculate card positions
         total_width = len(cards_data) * self.card_width + (len(cards_data) - 1) * self.card_spacing
         start_x = (self.config.window_width - total_width) // 2
         start_y = (self.config.window_height - self.card_height) // 2

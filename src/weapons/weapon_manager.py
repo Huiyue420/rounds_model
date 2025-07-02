@@ -77,8 +77,17 @@ class WeaponManager:
         return self.switch_weapon(prev_weapon)
     
     def shoot(self, start_pos, target_pos) -> bool:
-        """使用當前武器射擊"""
-        return self.current_weapon.shoot(start_pos, target_pos)
+        """Use current weapon to shoot"""
+        success = self.current_weapon.shoot(start_pos, target_pos)
+        if success:
+            # Emit weapon shoot event for audio/visual effects
+            self.event_manager.emit(EventType.WEAPON_SHOOT, {
+                'weapon_type': self.current_weapon_type,
+                'weapon_name': self.current_weapon.get_display_name(),
+                'start_pos': start_pos,
+                'target_pos': target_pos
+            })
+        return success
     
     def reload(self) -> bool:
         """重裝當前武器"""
@@ -106,7 +115,7 @@ class WeaponManager:
         self.logger.info(f"卡牌效果已應用: {effect_type} = {value}")
     
     def get_weapon_info(self) -> Dict:
-        """獲取當前武器信息"""
+        """Get current weapon information"""
         weapon = self.current_weapon
         return {
             'type': self.current_weapon_type,
@@ -114,5 +123,8 @@ class WeaponManager:
             'ammo': weapon.current_ammo,
             'max_ammo': weapon.get_max_magazine_size(),
             'is_reloading': weapon.is_reloading,
-            'reload_progress': weapon.get_reload_progress()
+            'reload_progress': weapon.get_reload_progress(),
+            'damage': weapon.get_damage(),
+            'bullet_speed': weapon.bullet_speed,
+            'bullet_size': weapon.bullet_size
         }

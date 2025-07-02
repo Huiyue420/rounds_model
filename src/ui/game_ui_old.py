@@ -1,5 +1,5 @@
 """
-Game UI System - Optimized Version with English Text
+Game UI System - Optimized Version
 Handles in-game user interface display, including health bars, ammo display, weapon info, etc.
 """
 
@@ -103,58 +103,59 @@ class AmmoDisplay(UIElement):
         self.reload_progress = reload_progress
     
     def render(self, screen, font) -> None:
-        """Render ammo display"""
+        """渲染彈藥顯示"""
         if not self.visible or not pygame:
             return
         
         if self.is_reloading:
-            # Show reload progress
-            progress_text = f"Reloading... {int(self.reload_progress * 100)}%"
-            text_surface = font.render(progress_text, True, self.reload_color)
+            # 顯示重裝進度
+            text = f"重裝中... {self.reload_progress:.0%}"
+            color = self.reload_color
         else:
-            # Show ammo count
-            ammo_text = f"Ammo: {self.current_ammo}/{self.max_ammo}"
-            text_surface = font.render(ammo_text, True, self.text_color)
+            # 顯示彈藥數量
+            text = f"彈藥: {self.current_ammo}/{self.max_ammo}"
+            color = self.text_color
         
+        text_surface = font.render(text, True, color)
         screen.blit(text_surface, (self.x, self.y))
 
 
 class WeaponDisplay(UIElement):
-    """Weapon display UI element"""
+    """武器顯示"""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, 120, 30)
-        self.weapon_name = "Unknown"
+        super().__init__(x, y, 200, 30)
+        self.weapon_name = "手槍"
         self.text_color = (255, 255, 255)
     
     def set_weapon(self, weapon_name: str) -> None:
-        """Set weapon name"""
+        """設置武器名稱"""
         self.weapon_name = weapon_name
     
     def render(self, screen, font) -> None:
-        """Render weapon display"""
+        """渲染武器顯示"""
         if not self.visible or not pygame:
             return
         
-        weapon_text = f"Weapon: {self.weapon_name}"
-        text_surface = font.render(weapon_text, True, self.text_color)
+        text = f"武器: {self.weapon_name}"
+        text_surface = font.render(text, True, self.text_color)
         screen.blit(text_surface, (self.x, self.y))
 
 
 class FPSCounter(UIElement):
-    """FPS counter UI element"""
+    """FPS 計數器"""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, 80, 20)
+        super().__init__(x, y, 100, 30)
         self.fps = 0
         self.text_color = (255, 255, 255)
     
     def set_fps(self, fps: float) -> None:
-        """Set FPS value"""
+        """設置 FPS"""
         self.fps = fps
     
     def render(self, screen, font) -> None:
-        """Render FPS display"""
+        """渲染 FPS 顯示"""
         if not self.visible or not pygame:
             return
         
@@ -164,25 +165,25 @@ class FPSCounter(UIElement):
 
 
 class GameUI:
-    """Game UI Manager"""
+    """遊戲 UI 管理器"""
     
     def __init__(self, config: GameConfig, event_manager: EventManager):
         self.config = config
         self.event_manager = event_manager
         self.logger = logging.getLogger(__name__)
         
-        # Fonts
+        # 字體
         self.font = None
         self.large_font = None
         self._init_fonts()
         
-        # UI Elements
+        # UI 元素
         self.health_bar = HealthBar(10, 10, config.health_bar_width, config.health_bar_height)
         self.ammo_display = AmmoDisplay(10, 40)
         self.weapon_display = WeaponDisplay(10, 70)
         self.fps_counter = FPSCounter(config.window_width - 100, 10)
         
-        # All UI elements list
+        # 其他 UI 元素
         self.ui_elements: List[UIElement] = [
             self.health_bar,
             self.ammo_display,
@@ -190,23 +191,21 @@ class GameUI:
             self.fps_counter
         ]
         
-        # Subscribe to UI events
+        # 訂閱 UI 相關事件
         self.event_manager.subscribe(EventType.UI_UPDATE_HEALTH, self._handle_health_update)
         self.event_manager.subscribe(EventType.UI_UPDATE_AMMO, self._handle_ammo_update)
         self.event_manager.subscribe(EventType.UI_UPDATE_WEAPON, self._handle_weapon_update)
         
-        self.logger.info("Game UI system initialized")
+        self.logger.info("遊戲 UI 系統初始化完成")
     
     def _init_fonts(self) -> None:
-        """Initialize fonts with English support"""
+        """初始化字體"""
         if pygame:
             try:
-                # Use default system font which works well for English
                 self.font = pygame.font.Font(None, 24)
                 self.large_font = pygame.font.Font(None, 36)
-                self.logger.info("Fonts initialized successfully")
             except Exception as e:
-                self.logger.warning(f"Font initialization failed: {e}")
+                self.logger.warning(f"字體初始化失敗: {e}")
                 self.font = None
                 self.large_font = None
         else:
@@ -214,26 +213,26 @@ class GameUI:
             self.large_font = None
     
     def update(self, dt: float, fps: float) -> None:
-        """Update UI system"""
-        # Update FPS display
+        """更新 UI 系統"""
+        # 更新 FPS 顯示
         self.fps_counter.set_fps(fps)
         
-        # Update all UI elements
+        # 更新所有 UI 元素
         for element in self.ui_elements:
             element.update(dt)
     
     def render(self, screen) -> None:
-        """Render all UI elements"""
+        """渲染所有 UI 元素"""
         if not pygame or not self.font:
             return
         
-        # Render all UI elements
+        # 渲染所有 UI 元素
         for element in self.ui_elements:
             if element.visible:
                 element.render(screen, self.font)
     
     def _handle_health_update(self, event) -> None:
-        """Handle health update event"""
+        """處理血量更新事件"""
         data = event.data
         current_health = data.get('current_health', 100)
         max_health = data.get('max_health', 100)
@@ -241,7 +240,7 @@ class GameUI:
         self.health_bar.set_health(current_health, max_health)
     
     def _handle_ammo_update(self, event) -> None:
-        """Handle ammo update event"""
+        """處理彈藥更新事件"""
         data = event.data
         current_ammo = data.get('current_ammo', 0)
         max_ammo = data.get('max_ammo', 0)
@@ -251,26 +250,26 @@ class GameUI:
         self.ammo_display.set_ammo(current_ammo, max_ammo, is_reloading, reload_progress)
     
     def _handle_weapon_update(self, event) -> None:
-        """Handle weapon update event"""
+        """處理武器更新事件"""
         data = event.data
-        weapon_name = data.get('weapon_name', 'Unknown Weapon')
+        weapon_name = data.get('weapon_name', '未知武器')
         
         self.weapon_display.set_weapon(weapon_name)
     
     def show_message(self, message: str, duration: float = 3.0) -> None:
-        """Show temporary message"""
-        # TODO: Implement temporary message display
-        self.logger.info(f"UI Message: {message}")
+        """顯示臨時訊息"""
+        # TODO: 實現臨時訊息顯示
+        self.logger.info(f"UI 訊息: {message}")
     
     def toggle_debug_info(self) -> None:
-        """Toggle debug info display"""
+        """切換調試信息顯示"""
         self.fps_counter.visible = not self.fps_counter.visible
     
     def set_ui_scale(self, scale: float) -> None:
-        """Set UI scale"""
+        """設置 UI 縮放"""
         self.config.ui_scale = scale
-        # TODO: Recalculate all UI element sizes and positions
+        # TODO: 重新計算所有 UI 元素的大小和位置
     
     def cleanup(self) -> None:
-        """Cleanup UI system"""
-        self.logger.info("UI system cleaned up")
+        """清理 UI 系統"""
+        self.logger.info("UI 系統已清理")

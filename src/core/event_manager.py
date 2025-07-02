@@ -21,6 +21,7 @@ class EventType(Enum):
     # 武器事件
     WEAPON_SWITCH = "weapon_switch"
     WEAPON_FIRE = "weapon_fire"
+    WEAPON_SHOOT = "weapon_shoot"  # 射擊事件
     WEAPON_RELOAD_START = "weapon_reload_start"
     WEAPON_RELOAD_COMPLETE = "weapon_reload_complete"
     
@@ -34,6 +35,12 @@ class EventType(Enum):
     CARD_APPLY = "card_apply"
     CARD_SHOW_SELECTION = "card_show_selection"
     CARD_HIDE_SELECTION = "card_hide_selection"
+    
+    # 假人事件
+    DUMMY_SPAWN = "dummy_spawn"
+    DUMMY_DAMAGE = "dummy_damage"
+    DUMMY_DEATH = "dummy_death"
+    DUMMY_RESPAWN = "dummy_respawn"
     
     # 遊戲事件
     GAME_START = "game_start"
