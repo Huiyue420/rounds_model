@@ -4,6 +4,7 @@
 """
 
 import math
+import random
 import time
 from typing import Tuple, List, Optional, Dict, Any
 from abc import ABC, abstractmethod
@@ -144,7 +145,7 @@ class WeaponBase(ABC):
             else:
                 # 單發武器的隨機散佈
                 spread_range = math.radians(self.spread)
-                angle_offset = (math.random() - 0.5) * spread_range
+                angle_offset = (random.random() - 0.5) * spread_range
             
             bullet_angle = base_angle + angle_offset
             
