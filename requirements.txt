@@ -1,0 +1,9 @@
+pygame>=2.5.2
+pygame-gui>=0.6.9
+numpy>=1.24.0
+websockets>=12.0
+asyncio
+typing-extensions>=4.8.0
+pydantic>=2.5.0
+dataclasses-json>=0.6.0
+pillow>=10.0.0
